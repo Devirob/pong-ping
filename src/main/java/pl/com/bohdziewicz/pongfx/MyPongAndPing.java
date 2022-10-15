@@ -6,11 +6,13 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 import java.io.IOException;
@@ -56,12 +58,24 @@ public class MyPongAndPing extends Application {
         stage.setTitle("PONG");
         Canvas canvas = new Canvas(width, height);
         GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
+
         Timeline timeline = new Timeline(new KeyFrame(Duration.millis(10), actionEvent -> run(graphicsContext)));
         timeline.setCycleCount(Timeline.INDEFINITE);
 
         canvas.setOnMouseMoved(mouseEvent -> playerOneYPosition = mouseEvent.getY());
-        canvas.setOnMouseClicked(mouseEvent -> gameStarted = true);
+//        canvas.setOnMouseClicked(mouseEvent -> gameStarted = true);
+        canvas.setOnMouseClicked(event ->
+        {
+            if (event.getButton() == MouseButton.PRIMARY) {
+                gameStarted = true;
+            }
+            if (event.getButton() == MouseButton.SECONDARY) {
+                System.exit(0);
+            }
+        });
+
         stage.setScene(new Scene(new StackPane(canvas)));
+        stage.initStyle(StageStyle.UNDECORATED);
         stage.show();
         timeline.play();
     }
@@ -75,6 +89,7 @@ public class MyPongAndPing extends Application {
         graphicsContext.setFont(Font.font(25));
 
         if (gameStarted) {
+
             ballXPosition += ballXSpeed;
             ballYPosition += ballYSpeed;
 
@@ -82,30 +97,49 @@ public class MyPongAndPing extends Application {
                 playerTwoYPosition = ballYPosition - PLAYER_HEIGHT / 2;
             } else {
 
-                playerTwoYPosition =  ballYPosition > playerTwoYPosition + PLAYER_HEIGHT / 2 ?playerTwoYPosition += 1: playerTwoYPosition - 1;
+                playerTwoYPosition =
+                        ballYPosition > playerTwoYPosition + PLAYER_HEIGHT / 2 ? playerTwoYPosition += 1 :
+                                playerTwoYPosition - 1;
             }
 
             graphicsContext.fillOval(ballXPosition, ballYPosition, BALL_R, BALL_R);
         } else {
-            graphicsContext.setStroke(Color.WHITE);
+            graphicsContext.setStroke(Color.RED);
             graphicsContext.setTextAlign(TextAlignment.CENTER);
             graphicsContext.strokeText("Just click", width / 2, height / 2);
 
             ballXPosition = width / 2;
             ballYPosition = height / 2;
 
-            ballXSpeed = new Random().nextInt(2) == 0 ? 1 : -1;
-            ballYSpeed = new Random().nextInt(2) == 0 ? 1 : -1;
+            ballXSpeed = new Random().nextInt(2) == 0 ? new Random().nextInt(5) : new Random().nextInt(5) * -1;
+            ballYSpeed = new Random().nextInt(2) == 0 ? new Random().nextInt(5) : new Random().nextInt(5) * -1;
         }
 
         if (ballYPosition > height || ballYPosition < 0) {
             ballYSpeed *= -1;
         }
 
+        if (ballXPosition > playerTwoXPosition + PLAYER_WIDTH) {
+            scoreP2++;
+            gameStarted = false;
+        }
 
+        if (ballXPosition < playerOneXPosition - PLAYER_WIDTH) {
+            scoreP1++;
+            gameStarted = false;
+        }
+
+        if (((ballXPosition + BALL_R > playerTwoXPosition) && ballYPosition >= playerTwoYPosition
+                && ballYPosition <= playerTwoYPosition + PLAYER_HEIGHT) ||
+                ((ballXPosition < playerOneXPosition + PLAYER_WIDTH) && ballYPosition >= playerOneYPosition
+                        && ballYPosition <= playerOneYPosition + PLAYER_HEIGHT)) {
+            ballYSpeed += 1 * Math.signum(ballYSpeed);
+            ballXSpeed += 1 * Math.signum(ballXSpeed);
+            ballXSpeed *= -1;
+            ballYSpeed *= -1;
+        }
 
         graphicsContext.fillText(scoreP1 + "\t\t\t\t\t\t" + scoreP2, width / 2, 100);
-
         graphicsContext.fillRect(playerTwoXPosition, playerTwoYPosition, PLAYER_WIDTH, PLAYER_HEIGHT);
         graphicsContext.fillRect(playerOneXPosition, playerOneYPosition, PLAYER_WIDTH, PLAYER_HEIGHT);
     }

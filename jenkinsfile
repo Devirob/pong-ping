@@ -1,13 +1,13 @@
-job('example') {
-    steps {
-        maven('verify')
-        maven('clean verify', 'pom.xml')
-        maven {
-            goals('clean')
-            goals('verify')
-            properties(skipTests: true)
-            mavenInstallation('Maven 3.1.1')
-            providedSettings('central-mirror')
+pipeline {
+    agent any
+    tools {
+        maven 'maven-3.6.3'
+    }
+    stages {
+        stage ('Build') {
+            steps {
+                sh 'mvn clean verify'
+            }
         }
     }
 }

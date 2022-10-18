@@ -1,16 +1,7 @@
-pipeline {
-    agent any
+node {
+    stage('Stage 1') {
+        echo 'Starting with TA-TEST for IDMS'
+        sh 'mvn -B -DskipTests clean package'
 
-    environment {
-        USE_JDK = 'true'
-        JDK ='c:/Java/jdk1.8'
-    }
-
-    stages {
-        stage('Build') {
-            steps {
-                sh 'printenv'
-            }
-        }
     }
 }
